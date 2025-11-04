@@ -1,6 +1,4 @@
 # pip install streamlit
-# pip install streamlit-audiorecorder
-
 import streamlit as st
 
 def main():
