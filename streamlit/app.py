@@ -7,6 +7,9 @@ import time
 import json
 import os
 import sys
+import time
+
+TIME_LIMIT = 180
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -23,8 +26,10 @@ if 'selected_case' not in st.session_state:
     st.session_state.selected_case = None
 if 'conversation_history' not in st.session_state:
     st.session_state.conversation_history = {}
-if 'confidence' not in st.session_state:
-    st.session_state.confidence = 3
+if 'opportunity' not in st.session_state:
+    st.session_state.opportunity = 3
+if "start_time" not in st.session_state:
+    st.session_state.start_time = time.time()
 if 'game_over' not in st.session_state:
     st.session_state.game_over = False
 if 'game_result' not in st.session_state:
@@ -82,7 +87,6 @@ def get_suspect_info(case, suspect_name):
             return info.strip()
     return "정보 없음"
 
-
     
 # 배경 이미지 함수
 def set_background():
@@ -92,7 +96,7 @@ def set_background():
         /* 전체 배경 설정 */
         .stApp {
             background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-                        url("https://images.unsplash.com/photo-1550995694-3f5f3f8e50e7?w=1920");
+                        url("https://www.shutterstock.com/image-vector/frame-crime-investigation-elements-caution-600nw-2452782777.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -110,58 +114,69 @@ def set_background():
             border-radius: 10px;
         }
         </style>
-        """,
-        unsafe_allow_html=True
+        """, unsafe_allow_html=True
+    )
+
+    # CSS 스타일
+    st.markdown("""
+        <style>
+        .big-font {
+            font-size:30px !important;
+            font-weight: bold;
+        }
+        .evidence-box {
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f0f2f6;
+            margin: 10px 0;
+        }
+        .suspect-box {
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #e8eaf6;
+            margin: 10px 0;
+        }
+        </style>
+        """, unsafe_allow_html=True
     )
 set_background()
 
-# CSS 스타일
-st.markdown("""
-    <style>
-    .big-font {
-        font-size:30px !important;
-        font-weight: bold;
-    }
-    .evidence-box {
-        padding: 20px;
-        border-radius: 10px;
-        background-color: #f0f2f6;
-        margin: 10px 0;
-    }
-    .suspect-box {
-        padding: 15px;
-        border-radius: 8px;
-        background-color: #e8eaf6;
-        margin: 10px 0;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-# 사이드바 네비게이션
-with st.sidebar:
-    st.title("〈The Room of Lies〉")
-    st.divider()
-    
-    if st.button("🗄️사건 파일", use_container_width=True):
-        st.session_state.current_page = 'intro'
-    
-    if st.session_state.selected_case:
-        if st.button("🔬 증거물", use_container_width=True):
-            st.session_state.current_page = 'evidence'
+# 사이드바 네비게이션 함수
+def sidebar_navigation():
+    with st.sidebar:
+        st.title("〈The Room of Lies〉")
+        st.divider()
         
-        if st.button("🕵️‍♀️ 용의자 심문", use_container_width=True):
-            st.session_state.current_page = 'interrogation'
-
-        if st.button("👩‍💻 목격자 진술", use_container_width=True):
-            st.session_state.current_page = 'witness'
+        if st.button("🗄️사건 파일", use_container_width=True):
+            st.session_state.current_page = 'intro'
         
-        if st.button("🎯 엔딩", use_container_width=True):
-            st.session_state.current_page = 'ending'
-    
-    st.divider()
-    if st.session_state.selected_case and not st.session_state.game_over:
-        st.metric("신뢰도", f"{st.session_state.confidence}/3", 
-                 delta=None if st.session_state.confidence == 3 else f"-{3-st.session_state.confidence}")
+        if st.session_state.selected_case:
+            if st.button("🔬 증거물", use_container_width=True):
+                st.session_state.current_page = 'evidence'
+            
+            if st.button("🕵️‍♀️ 용의자 심문", use_container_width=True):
+                st.session_state.current_page = 'interrogation'
+
+            if st.button("👩‍💻 목격자 진술", use_container_width=True):
+                st.session_state.current_page = 'witness'
+            
+            if st.button("⛔ 엔딩", use_container_width=True):
+                st.session_state.current_page = 'ending'
+
+        st.divider()
+        if st.session_state.selected_case and not st.session_state.game_over:
+            st.metric("남은 기회", f"{st.session_state.opportunity}/3", 
+                    delta=None if st.session_state.opportunity == 3 else f"-{3-st.session_state.opportunity}")
+            
+        st.divider()
+        elapsed = int(time.time() - st.session_state.start_time)
+        remaining = max(TIME_LIMIT - elapsed, 0)
+        while not st.session_state.game_over:
+            minutes = remaining // 60
+            seconds = remaining % 60
+            st.metric("남은 시간", f"{minutes:02d}:{seconds:02d}")
+
+sidebar_navigation()
 
 # 사건 소개 페이지
 def main():
@@ -175,19 +190,19 @@ def main():
         case_list = list(CASES.keys())
         
         selected = st.selectbox(
-            "수사할 사건을 선택하세요",
+            "수사할 사건을 선택하세요.",
             options=case_list,
             key="case_selectbox" 
         )
-        selected
+
         if st.button("수사 시작", type="primary"):
             st.session_state.selected_case = selected
-            st.session_state.confidence = 3
+            st.session_state.opportunity = 3
             st.session_state.game_over = False
             st.session_state.game_result = None
             st.session_state.conversation_history = {}
             st.session_state.suspect_chat_history = {}
-            st.session_state.witness_chat_history = {}
+            st.session_state.witness_chat_history = []
             st.rerun()
     
     with col2:
@@ -210,7 +225,7 @@ def main():
             st.divider()
             
             # 신문 기사
-            st.subheader("📰 신문 기사")
+            st.subheader("신문 기사")
             articles = case.get("신문 기사", [])
             if articles:
                 for article in articles:
@@ -278,7 +293,7 @@ def interrogation_page():
     suspect_names = [s.get('개인 정보', {}).get('이름', f'용의자 {i+1}') for i, s in enumerate(suspects)]
     
     # 용의자 선택
-    suspect_name = st.selectbox("심문할 용의자 선택", suspect_names)
+    suspect_name = st.selectbox("심문할 용의자를 선택하세요.", suspect_names)
     
     # 선택된 용의자 정보 가져오기
     selected_suspect = None
@@ -293,7 +308,6 @@ def interrogation_page():
     col1, col2 = st.columns([1, 2])
     
     with col1:
-        st.markdown(f"<div class='suspect-box'>", unsafe_allow_html=True)
         personal_info = selected_suspect.get('개인 정보', {})
         body_info = selected_suspect.get('신체 정보', {})
         
@@ -312,11 +326,9 @@ def interrogation_page():
         
         st.write(f"**의심점:**")
         st.caption(selected_suspect.get('의심점', '없음'))
-        
-        st.markdown("</div>", unsafe_allow_html=True)
     
     with col2:
-        st.subheader("💬 심문 대화")
+        st.subheader("심문 대화")
         
         if chat_key not in st.session_state.conversation_history:
             st.session_state.conversation_history[chat_key] = []
@@ -331,14 +343,14 @@ def interrogation_page():
                         question = content.split('용의자에게 질문:')[-1].strip()
                     else:
                         question = content
-                    with st.chat_message("user"):
+                    with st.chat_message("user", avatar="🕵️"):
                         st.write(question)
                 elif msg['role'] == 'assistant':
-                    with st.chat_message("assistant"):
+                    with st.chat_message("assistant", avatar="👤"):
                         st.write(msg['content'])
         
         # 질문 입력
-        user_question = st.text_input("질문을 입력하세요", key=f"question_{suspect_name}")
+        user_question = st.text_input("질문을 입력하세요.", placeholder="예: 사건 당일 무엇을 하고 있었나요?", key=f"question_{suspect_name}")
         
         col_btn1, col_btn2 = st.columns([1, 1])
 
@@ -373,33 +385,52 @@ def interrogation_page():
                     del st.session_state.conversation_history[chat_key]
                 st.rerun()
     
-
+    # 대화 요약
+    if chat_key in st.session_state.conversation_history and st.session_state.conversation_history[chat_key]:
+        st.divider()
+        st.subheader("대화 요약")
+        
+        for idx, conv in enumerate(st.session_state.conversation_history[chat_key], 1):
+            with st.expander(f"질문 {idx}: {conv['질문'][:50]}..."):
+                st.write(f"**질문:** {conv['질문']}")
+                st.write(f"**답변:** {conv['답변']}")
 
 # 증인 페이지
 def witness_page():
     st.title("👩‍💻 목격자 진술")
-    
-    case = CASES[st.session_state.selected_case]
 
-    # 세션 상태 초기화
+    case = CASES[st.session_state.selected_case]
+    
+    # witness_chat_history 초기화
     if "witness_chat_history" not in st.session_state:
         st.session_state.witness_chat_history = []
-
+    
     col1, col2 = st.columns([1, 2])
+    
     with col1:
-        # 용의자와의 대화 요약 표시 (용의자와 대화한 내역이 있다면)
-        if "conversation_history" in st.session_state:
-            st.subheader("용의자와의 대화 요약")
+        st.subheader("용의자와의 대화 요약")
+        if "conversation_history" in st.session_state and st.session_state.conversation_history:
+            has_conversation = False
             for key, conv in st.session_state.conversation_history.items():
-                if conv:
-                    summary = f"{key}와의 대화 요약:\n"
-                    for qa in conv:
-                        summary += f"**Q:** {qa['질문']}\n**A:** {qa['답변']}\n\n"
-                    st.text_area("대화 요약", summary, height=200)
-
+                if conv and not key.endswith('_witness'):
+                    has_conversation = True
+                    suspect_name = key.split('_')[-1]
+                    with st.expander(f"{suspect_name}와의 대화"):
+                        for qa in conv[-3:]:  # 최근 3개만 표시
+                            st.caption(f"Q: {qa['질문'][:50]}...")
+                            st.caption(f"A: {qa['답변'][:50]}...")
+            
+            if not has_conversation:
+                st.caption("아직 용의자와 대화한 내역이 없습니다.")
+        else:
+            st.caption("아직 용의자와 대화한 내역이 없습니다.")
+    
     with col2:
-        st.subheader("심문 대화")
-        # 대화 내용 표시 (시스템 메시지 제외)
+        st.subheader("목격자 심문")
+        
+        st.caption("💡 목격자는 사건의 진실을 알고 있습니다. 용의자와의 대화를 참고하여 구체적으로 질문하세요.")
+        
+        # 대화 내용 표시
         for msg in st.session_state.witness_chat_history:
             if msg['role'] == 'user':
                 content = msg['content']
@@ -407,29 +438,77 @@ def witness_page():
                     question = content.split('목격자에게 질문:')[-1].strip()
                 else:
                     question = content
-                with st.chat_message("user"):
+                with st.chat_message("user", avatar="🕵️"):
                     st.write(question)
             elif msg['role'] == 'assistant':
-                with st.chat_message("assistant"):
+                with st.chat_message("assistant", avatar="👤"):
                     st.write(msg['content'])
-
-        user_question = st.text_input("질문을 입력하세요", key="witness_question")
+        
+        st.divider()
+        
+        # 질문 입력
+        user_question = st.text_input("질문을 입력하세요.", placeholder="예: 사건 당일 무엇을 목격했나요?", key="witness_question")
         
         col_btn1, col_btn2 = st.columns([1, 1])
-
+        
         with col_btn1:
             if st.button("질문하기", type="primary", use_container_width=True):
                 if user_question.strip():
                     with st.spinner("목격자가 답변 중..."):
                         # 증인과 대화
                         answer = witness_chat(case, user_question, st.session_state.suspect_chat_history, st.session_state.witness_chat_history)
-                        st.experimental_rerun()
-    
-        with col_btn2:   
-            # 이전 대화 초기화 버튼
+                        st.rerun()
+                else:
+                    st.warning("질문을 입력해주세요.")
+        
+        with col_btn2:
+            # 대화 초기화 버튼
             if st.button("대화 초기화", use_container_width=True):
                 st.session_state.witness_chat_history = []
-                st.experimental_rerun()
+                st.success("대화가 초기화되었습니다.")
+                time.sleep(1)
+                st.rerun()
+    
+    # 대화 요약
+    if st.session_state.witness_chat_history and len(st.session_state.witness_chat_history) > 1:
+        st.divider()
+        st.subheader("심문 기록")
+        
+        # 대화 내용 정리
+        conversations = []
+        for i in range(1, len(st.session_state.witness_chat_history)):
+            msg = st.session_state.witness_chat_history[i]
+            if msg['role'] == 'user':
+                question = msg['content']
+                if '목격자에게 질문:' in question:
+                    question = question.split('목격자에게 질문:')[-1].strip()
+                # 다음 메시지가 답변인지 확인
+                if i + 1 < len(st.session_state.witness_chat_history):
+                    next_msg = st.session_state.witness_chat_history[i + 1]
+                    if next_msg['role'] == 'assistant':
+                        conversations.append({
+                            "질문": question,
+                            "답변": next_msg['content']
+                        })
+        
+        # 대화 내용 표시
+        for idx, conv in enumerate(conversations, 1):
+            with st.expander(f"질문 {idx}: {conv['질문'][:50]}..."):
+                st.write(f"**질문:** {conv['질문']}")
+                st.write(f"**답변:** {conv['답변']}")
+        
+        # 다운로드 버튼
+        if conversations:
+            export_text = "=== 목격자 심문 기록 ===\n\n"
+            for idx, conv in enumerate(conversations, 1):
+                export_text += f"[질문 {idx}]\n{conv['질문']}\n\n[답변 {idx}]\n{conv['답변']}\n\n"
+            
+            st.download_button(
+                label="📥 심문 기록 다운로드",
+                data=export_text,
+                file_name=f"목격자_심문_기록_{st.session_state.selected_case}.txt",
+                mime="text/plain"
+            )
 
 
 # 엔딩 페이지
@@ -438,24 +517,18 @@ def ending_page():
         st.warning("먼저 사건을 선택해주세요.")
         return
     
-    if st.session_state.selected_case not in CASES:
-        st.error("선택한 사건 정보를 찾을 수 없습니다.")
-        return
-    
-    st.title("🎯 범인 지목")
+    st.title("⛔ 범인 지목")
     case = CASES[st.session_state.selected_case]
     
     if st.session_state.game_over:
         if st.session_state.game_result == "success":
-            st.success("### 🎉 게임 클리어!")
+            st.error('게임 클리어! 범인을 밝혀냈습니다!')
             st.balloons()
-            st.write("완벽한 추리입니다. 범인을 밝혀냈습니다!")
         else:
-            st.error("### 😢 게임 오버")
-            st.write("범인을 밝혀내지 못한 채 사건은 미궁으로 빠졌습니다.")
+            st.error("게임 오버! 기회를 모두 잃어 게임이 종료됩니다...")          
         
         st.divider()
-        st.subheader("📋 사건의 진실")
+        st.subheader("사건의 진실")
         truth_list = case.get('진실', [])
         if truth_list:
             for truth in truth_list:
@@ -465,17 +538,24 @@ def ending_page():
         if st.button("새 게임 시작", type="primary"):
             st.session_state.current_page = 'intro'
             st.session_state.selected_case = None
-            st.session_state.confidence = 3
+            st.session_state.opportunity = 3
+            st.session_state.start_time = time.time()
             st.session_state.game_over = False
             st.session_state.game_result = None
             st.session_state.conversation_history = {}
             st.session_state.suspect_chat_history = {}
-            st.session_state.witness_history = {}
+            st.session_state.witness_chat_history = []
             st.rerun()
     
     else:
-        st.write("수사를 마치고 범인을 지목하세요.")
-        st.warning(f"현재 신뢰도: {st.session_state.confidence}/3 (틀릴 때마다 신뢰도가 감소합니다)")
+        if remaining == 0:
+            st.session_state.game_over = True
+            st.session_state.game_result = "failure"
+            st.warning("시간이 초과 게임 오버! 범인을 밝혀내지 못한 채 사건은 미궁으로 빠집니다...")
+            st.rerun()
+        else:
+            st.write("수사를 마치고 범인을 지목하세요.")
+            st.warning(f"무고한 사람을 지목하여 기회가 감소했습니다. 다시 추리해보세요.")
         
         # 용의자 목록 생성
         suspects = case.get("용의자", [])
@@ -502,15 +582,16 @@ def ending_page():
                         st.session_state.game_result = "success"
                         st.rerun()
                     else:
-                        st.session_state.confidence -= 1
-                        if st.session_state.confidence == 0:
+                        st.session_state.opportunity -= 1
+                        if st.session_state.opportunity == 0:
                             st.session_state.game_over = True
                             st.session_state.game_result = "failure"
                             st.rerun()
                         else:
-                            st.error(f"무고한 사람을 지목했습니다! 신뢰도가 {st.session_state.confidence}로 감소했습니다.")
+                            st.error(f"기회가 {st.session_state.opportunity}번 남았습니다.")
                             time.sleep(2)
                             st.rerun()
+
 
 # 페이지 라우팅
 if st.session_state.current_page == 'intro':

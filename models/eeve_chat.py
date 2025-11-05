@@ -15,7 +15,7 @@ def suspect_chat(case, info, user_input, suspect_chat_history):
 
     {case} 
 
-    - "[5] 진실"에 대한 내용은 AI 내부 참고용이므로 플레이어에게 공개하지 않습니다.
+    - "[5] 진실"에 대한 내용은 정답 데이터입니다. AI 내부 참고용이므로 플레이어에게 공개하지 않습니다.
     - 절대로 플레이어 역할로 발화하지 마세요.
     - 플레이어(프로파일러)의 질문에 용의자인 해당 인물의 시점으로만 답해야 합니다.
 
@@ -50,7 +50,6 @@ def suspect_chat(case, info, user_input, suspect_chat_history):
     return answer
 
 
-
 # 증인과의 대화
 def witness_chat(case, user_input, suspect_chat_history, witness_chat_history):
     system_instruction = f"""
@@ -63,8 +62,9 @@ def witness_chat(case, user_input, suspect_chat_history, witness_chat_history):
     {suspect_chat_history}
     
     ### 지시사항 ###
-    - "[5] 진실"을 통해 범인을 확인하고 기억하세요.
-    - "[5] 진실"에 대한 내용은 AI 내부 참고용이므로 플레이어에게 공개하지 않습니다.
+    - [사건 정보]에 없는 내용은 만들어내지 말고 필요하면 "기억나지 않아요"라고 답해야 합니다.
+    - "[5] 진실"을 통해 실제 범인을 확인하고 기억하세요.
+    - "[5] 진실"에 대한 내용은 정답 데이터입니다. AI 내부 참고용이므로 플레이어에게 공개하지 않습니다.
     - 피해자 가족, 이웃, 행인, 동료 등 특정한 사람으로 컨셉을 정해야 합니다. 
     - 플레이어(프로파일러)의 질문에 해당 인물의 시점으로만 증언해야 합니다.
     - 사실만을 진술해야 하며 플레이어에게 힌트가 되는 정보를 제공해야 합니다.
