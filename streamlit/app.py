@@ -9,7 +9,7 @@ import os
 import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from models.eeve_chat import suspect_chat, witness_chat
+from models.eeve_chat_v1 import suspect_chat, witness_chat
 
 # 페이지 설정
 st.set_page_config(page_title="〈The Room of Lies〉", page_icon="🕵️‍♀️", layout="wide")
