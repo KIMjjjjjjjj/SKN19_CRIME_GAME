@@ -38,7 +38,7 @@ if "witness_chat_history" not in st.session_state:
 # JSON 파일 로드 함수
 def load_case_files():
     cases = {}
-    for i in range(1, 6):
+    for i in range(1, 9):
         file_path = f'./../data/case_file{i}.json'
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
