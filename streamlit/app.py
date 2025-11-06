@@ -7,16 +7,12 @@ import time
 import json
 import os
 import sys
-import time
-
-TIME_LIMIT = 180
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from models.eeve_chat import suspect_chat, witness_chat
 
 # 페이지 설정
-st.set_page_config(page_title="〈The Room of Lies〉", page_icon="🔍", layout="wide")
+st.set_page_config(page_title="〈The Room of Lies〉", page_icon="🕵️‍♀️", layout="wide")
 
 
 # 세션 스테이트 초기화
@@ -27,9 +23,7 @@ if 'selected_case' not in st.session_state:
 if 'conversation_history' not in st.session_state:
     st.session_state.conversation_history = {}
 if 'opportunity' not in st.session_state:
-    st.session_state.opportunity = 3
-if "start_time" not in st.session_state:
-    st.session_state.start_time = time.time()
+    st.session_state.opportunity = 2
 if 'game_over' not in st.session_state:
     st.session_state.game_over = False
 if 'game_result' not in st.session_state:
@@ -69,29 +63,29 @@ CASES = st.session_state.cases_data
 
 # 용의자 정보 추출 함수
 def get_suspect_info(case, suspect_name):
-    """용의자 정보를 문자열로 반환"""
+    # 용의자 정보 문자열 반환
     suspects = case.get('용의자', [])
     for suspect in suspects:
         personal_info = suspect.get('개인 정보', {})
         if personal_info.get('이름') == suspect_name:
             info = f"""
-이름: {personal_info.get('이름')}
-나이: {personal_info.get('나이')}
-성별: {personal_info.get('성별')}
-직업: {personal_info.get('직업')}
-신체: 키 {suspect.get('신체 정보', {}).get('키')}, 몸무게 {suspect.get('신체 정보', {}).get('몸무게')}
-피해자와의 관계: {suspect.get('관계')}
-알리바이: {suspect.get('알리바이')}
-의심점: {suspect.get('의심점')}
-"""
+            이름: {personal_info.get('이름')}
+            나이: {personal_info.get('나이')}
+            성별: {personal_info.get('성별')}
+            직업: {personal_info.get('직업')}
+            신체: 키 {suspect.get('신체 정보', {}).get('키')}, 몸무게 {suspect.get('신체 정보', {}).get('몸무게')}
+            피해자와의 관계: {suspect.get('관계')}
+            알리바이: {suspect.get('알리바이')}
+            의심점: {suspect.get('의심점')}
+            """
             return info.strip()
     return "정보 없음"
 
     
 # 배경 이미지 함수
 def set_background():
-    st.markdown(
-        """
+    # 배경 이미지 설정
+    st.markdown("""
         <style>
         /* 전체 배경 설정 */
         .stApp {
@@ -139,7 +133,7 @@ def set_background():
         </style>
         """, unsafe_allow_html=True
     )
-set_background()
+
 
 # 사이드바 네비게이션 함수
 def sidebar_navigation():
@@ -165,30 +159,19 @@ def sidebar_navigation():
 
         st.divider()
         if st.session_state.selected_case and not st.session_state.game_over:
-            st.metric("남은 기회", f"{st.session_state.opportunity}/3", 
-                    delta=None if st.session_state.opportunity == 3 else f"-{3-st.session_state.opportunity}")
+            st.metric("남은 기회", f"{st.session_state.opportunity}/2", 
+                    delta=None if st.session_state.opportunity == 2 else f"-{2-st.session_state.opportunity}")
             
-        st.divider()
-        elapsed = int(time.time() - st.session_state.start_time)
-        remaining = max(TIME_LIMIT - elapsed, 0)
-        while not st.session_state.game_over:
-            minutes = remaining // 60
-            seconds = remaining % 60
-            st.metric("남은 시간", f"{minutes:02d}:{seconds:02d}")
-
-sidebar_navigation()
 
 # 사건 소개 페이지
 def main():
     st.title("🗄️사건 파일")
     
     col1, col2 = st.columns([1, 2])
-    
     with col1:
         st.subheader("사건 선택")
         
-        case_list = list(CASES.keys())
-        
+        case_list = list(CASES.keys()) 
         selected = st.selectbox(
             "수사할 사건을 선택하세요.",
             options=case_list,
@@ -197,7 +180,7 @@ def main():
 
         if st.button("수사 시작", type="primary"):
             st.session_state.selected_case = selected
-            st.session_state.opportunity = 3
+            st.session_state.opportunity = 2
             st.session_state.game_over = False
             st.session_state.game_result = None
             st.session_state.conversation_history = {}
@@ -235,19 +218,10 @@ def main():
 
 # 증거물 페이지
 def evidence_page():
-    if not st.session_state.selected_case:
-        st.warning("먼저 사건을 선택해주세요.")
-        return
-    
-    if st.session_state.selected_case not in CASES:
-        st.error("선택한 사건 정보를 찾을 수 없습니다.")
-        return
-    
     st.title("🔬 증거물 분석")
     case = CASES[st.session_state.selected_case]
     
     evidence_list = case.get("증거물", [])
-    
     if not evidence_list:
         st.info("증거물 정보가 없습니다.")
         return
@@ -263,7 +237,6 @@ def evidence_page():
     }
     
     cols = st.columns(3)
-    
     for idx, evidence in enumerate(evidence_list):
         with cols[idx % 3]:
             st.markdown(f"<div class='evidence-box'>", unsafe_allow_html=True)
@@ -277,7 +250,7 @@ def evidence_page():
                     break
             
             st.markdown(f"<div style='font-size: 60px; text-align: center;'>{icon}</div>", unsafe_allow_html=True)
-            st.subheader(evidence_name)
+            st.markdown(f'#### {evidence_name}')
             st.write(f"**발견 위치:** {evidence.get('발견 위치', '알 수 없음')}")
             st.write(f"**설명:** {evidence.get('설명', '설명 없음')}")
             st.markdown("</div>", unsafe_allow_html=True)
@@ -306,7 +279,6 @@ def interrogation_page():
     chat_key = f"{st.session_state.selected_case}_{suspect_name}"
     
     col1, col2 = st.columns([1, 2])
-    
     with col1:
         personal_info = selected_suspect.get('개인 정보', {})
         body_info = selected_suspect.get('신체 정보', {})
@@ -328,7 +300,7 @@ def interrogation_page():
         st.caption(selected_suspect.get('의심점', '없음'))
     
     with col2:
-        st.subheader("심문 대화")
+        st.subheader("용의자 심문")
         
         if chat_key not in st.session_state.conversation_history:
             st.session_state.conversation_history[chat_key] = []
@@ -353,7 +325,6 @@ def interrogation_page():
         user_question = st.text_input("질문을 입력하세요.", placeholder="예: 사건 당일 무엇을 하고 있었나요?", key=f"question_{suspect_name}")
         
         col_btn1, col_btn2 = st.columns([1, 1])
-
         with col_btn1:
             if st.button("질문하기", type="primary", use_container_width=True):
                 if user_question.strip():
@@ -513,10 +484,6 @@ def witness_page():
 
 # 엔딩 페이지
 def ending_page():
-    if not st.session_state.selected_case:
-        st.warning("먼저 사건을 선택해주세요.")
-        return
-    
     st.title("⛔ 범인 지목")
     case = CASES[st.session_state.selected_case]
     
@@ -525,7 +492,7 @@ def ending_page():
             st.error('게임 클리어! 범인을 밝혀냈습니다!')
             st.balloons()
         else:
-            st.error("게임 오버! 기회를 모두 잃어 게임이 종료됩니다...")          
+            st.error("게임 오버! 기회를 모두 잃어 게임이 종료됩니다.")          
         
         st.divider()
         st.subheader("사건의 진실")
@@ -538,8 +505,7 @@ def ending_page():
         if st.button("새 게임 시작", type="primary"):
             st.session_state.current_page = 'intro'
             st.session_state.selected_case = None
-            st.session_state.opportunity = 3
-            st.session_state.start_time = time.time()
+            st.session_state.opportunity = 2
             st.session_state.game_over = False
             st.session_state.game_result = None
             st.session_state.conversation_history = {}
@@ -548,13 +514,9 @@ def ending_page():
             st.rerun()
     
     else:
-        if remaining == 0:
-            st.session_state.game_over = True
-            st.session_state.game_result = "failure"
-            st.warning("시간이 초과 게임 오버! 범인을 밝혀내지 못한 채 사건은 미궁으로 빠집니다...")
-            st.rerun()
+        if st.session_state.opportunity == 2:
+            st.info(f"수사를 마치고 범인을 지목하세요.")
         else:
-            st.write("수사를 마치고 범인을 지목하세요.")
             st.warning(f"무고한 사람을 지목하여 기회가 감소했습니다. 다시 추리해보세요.")
         
         # 용의자 목록 생성
@@ -562,7 +524,6 @@ def ending_page():
         suspect_names = [s.get('개인 정보', {}).get('이름', f'용의자 {i+1}') for i, s in enumerate(suspects)]
         
         col1, col2 = st.columns([2, 1])
-        
         with col1:
             suspect_choice = st.selectbox(
                 "범인으로 지목할 용의자",
@@ -594,6 +555,8 @@ def ending_page():
 
 
 # 페이지 라우팅
+set_background()
+sidebar_navigation()
 if st.session_state.current_page == 'intro':
     main()
 elif st.session_state.current_page == 'evidence':
