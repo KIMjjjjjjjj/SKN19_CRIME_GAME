@@ -18,12 +18,15 @@ AI는 각 사건의 시나리오와 인물의 심문 대사를 생성하며, 플
 ```markdown
 프로젝트/
 ├── data/
-│   ├── case_file1.json
+│   ├── case_file1.json     # 생성된 '사건 파일'
 │   ├── case_file2.json
 │   ├── case_file3.json
 │   ├── case_file4.json
 │   └── case_file5.json
-└── streamlit/ 
+├── models/
+│   ├── case_file.ipynb     # '사건 파일' 생성
+│   ├── eeve_chat.py        # '채팅' 생성
+└── streamlit/              # streamlit 파일
     └── app.py
 ```
 
