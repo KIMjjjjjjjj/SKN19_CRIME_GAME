@@ -36,14 +36,7 @@
 | 용의자(4명) 채팅 | 사건 파일을 기반으로 자신에게 불리한 부분을 숨기거나 왜곡된 진술 생성 |
 | 증인 채팅 | 사건에 대한 사실 기반의 증언 제공 (거짓 없이 진실만 말함) |
 
-- 증인 프롬프트는 용의자 진술까지 참고하여 교차 검증이 가능하며 추리에 도움이 되는 진술을 하도록 구성
-
-### Streamlit 구조
-- 사건 소개 페이지: 사건 선택 | 사건 파일 및 신문 스크랩 확인
-- 증거물 페이지: 증거물 정보 및 이미지 확인
-- 용의자 심문 페이지: 용의자와의 대화 
-- 증인 진술 페이지: 증인과의 대화
-- 엔딩 페이지: 범인 지목 후 결과 확인 
+- 증인 프롬프트는 용의자 진술까지 참고하여 교차 검증이 가능하며 추리에 도움이 되는 진술을 하도록 구성 
 
 ---
 
@@ -77,6 +70,23 @@
 
 ---
 
+## Streamlit 구조
+- 사건 소개 페이지: 사건 선택 | 사건 파일 및 신문 스크랩 확인
+- 증거물 페이지: 증거물 정보 및 이미지 확인
+- 용의자 심문 페이지: 용의자와의 대화 
+- 증인 진술 페이지: 증인과의 대화
+- 엔딩 페이지: 범인 지목 후 결과 확인
+
+<img width="1920" height="927" alt="image" src="https://github.com/user-attachments/assets/911860a7-bf12-4b39-9331-cf5e22f2c5a7" />
+<img width="1920" height="932" alt="image" src="https://github.com/user-attachments/assets/bb682de1-5a5c-43ad-a7d6-d01d3fe5efbe" />
+<img width="1920" height="928" alt="image" src="https://github.com/user-attachments/assets/7d2f6e36-4e20-47ed-9ff3-04061560b1d6" />
+<img width="1920" height="924" alt="image" src="https://github.com/user-attachments/assets/3c648e94-8e3b-4a1a-98d4-f44b6b6dafc1" />
+<img width="1920" height="926" alt="image" src="https://github.com/user-attachments/assets/0c505368-7be5-4cc7-a218-b01a88e2e5bb" />
+<img width="1920" height="926" alt="image" src="https://github.com/user-attachments/assets/0fc670bf-4762-45db-9bde-99fdca64b4a2" />
+<img width="1920" height="928" alt="image" src="https://github.com/user-attachments/assets/f3b5c042-44b1-4fbf-9e65-6099b783e3b8" />
+
+---
+
 ## ⚠️트러블슈팅
 1. **모델이 불완전한 JSON 반환:**
     - eeve 모델이 json형식을 일정하게 반환해주지 않고 줄바꿈, 쉼표 등을  잘못 반환하는 경우가 있음 
@@ -101,4 +111,3 @@
 2. 용의자의 답변과 증인 및 사건 파일을 크로스 체크하여 용의자 답의 신뢰도를 알려줌 
 -> 가장 모순이 많은 용의자 탐지
 3. 용의자 프로필 사진 추가
-4. 단서 이미지 변경
