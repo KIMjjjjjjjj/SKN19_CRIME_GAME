@@ -77,7 +77,6 @@
 - 증인 진술 페이지: 증인과의 대화
 - 엔딩 페이지: 범인 지목 후 결과 확인
 
-<img width="1920" height="927" alt="image" src="https://github.com/user-attachments/assets/911860a7-bf12-4b39-9331-cf5e22f2c5a7" />
 <img width="1920" height="932" alt="image" src="https://github.com/user-attachments/assets/bb682de1-5a5c-43ad-a7d6-d01d3fe5efbe" />
 <img width="1920" height="928" alt="image" src="https://github.com/user-attachments/assets/7d2f6e36-4e20-47ed-9ff3-04061560b1d6" />
 <img width="1920" height="924" alt="image" src="https://github.com/user-attachments/assets/3c648e94-8e3b-4a1a-98d4-f44b6b6dafc1" />
